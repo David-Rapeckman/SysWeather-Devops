@@ -1,0 +1,1 @@
+docker run -d --name sysweather_mysql --user 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sysweatherdb -e MYSQL_USER=sysweatheruser -e MYSQL_PASSWORD=s525sf53a2 -p 3306:3306 -v mysql_data:/var/lib/mysql mysql:8.0

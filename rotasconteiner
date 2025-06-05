@@ -1,0 +1,3 @@
+docker network create sysweather-network
+docker network connect sysweather-network sysweather_app
+docker network connect sysweather-network sysweather_mysql
