@@ -1,6 +1,9 @@
 Clonar o projeto
 
-./mvnw clean package -DskipTests
+verificar versao do java, sdk install java 17.0.8-tem
+e do maven mvn -version
+Compilar o aven mvn clean compile
+buildar o java, mvn clean package -DskipTests
 
 docker build -t sysweather-app .
 
@@ -8,3 +11,39 @@ docker network create sysweather-network
 
 #conteiner sql
 docker run -d --name sysweather_mysql --network sysweather-network --user 1000:1000 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sysweatherdb -e MYSQL_USER=sysweatheruser -e MYSQL_PASSWORD=s525sf53a2 -p 3306:3306 -v mysql_data:/var/lib/mysql mysql:8.0
+
+-------------------------
+docker run -d \
+  --name sysweather_mysql \
+  --network sysweather-network \
+  --user 1000:1000 \
+  -e MYSQL_ROOT_PASSWORD=root \
+  -e MYSQL_DATABASE=sysweatherdb \
+  -e MYSQL_USER=sysweatheruser \
+  -e MYSQL_PASSWORD=s525sf53a2 \
+  -v mysql_data:/var/lib/mysql \
+  mysql:8.0
+-------------------------
+
+Rodar o java 
+
+docker run -d --name sysweather_mysql --network sysweather-network --user 1000:1000 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sysweatherdb -e MYSQL_USER=sysweatheruser -e MYSQL_PASSWORD=s525sf53a2 -v mysql_data:/var/lib/mysql mysql:8.0
+
+-------------------------
+docker run -d \
+  --name sysweather_app \
+  --network sysweather-network \
+  -e URL=jdbc:mysql://sysweather_mysql:3306/sysweatherdb \
+  -p 8080:8080 \
+  sysweather-app
+-------------------------
+
+
+
+USE sysweatherdb;
+
+ SHOW DATABASES;    
+ 
+    SHOW TABLES;
+
+        SELECT * FROM **;
