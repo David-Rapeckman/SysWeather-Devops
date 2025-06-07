@@ -1,74 +1,88 @@
-SysWeather - Projeto Java + MySQL + Docker
-==========================================
+===========================
+SysWeather – Guia de Implantação
 
-SysWeather é uma aplicação Java (Spring Boot) para monitoramento climático, com persistência de dados em MySQL, totalmente conteinerizada via Docker.
+Pré-requisitos
+• Git
+• SDKMAN (para gerenciar versões do Java)
+• Maven
+• Docker
 
-1. PRÉ-REQUISITOS
-------------------
-- Docker instalado
-- Maven (ou ./mvnw) para gerar o .jar
+Clonar o repositório
 
-2. BUILD DO PROJETO JAVA
--------------------------
-Entre na pasta do projeto e execute:
+git clone https://github.com/guurangel/SysWeather.git
+cd SysWeather
 
-    ./mvnw clean package
+- Instalar/selecionar Java 17 e verificar Maven
 
-Isso gerará um arquivo .jar dentro da pasta 'target/'.
+sdk install java 17.0.8-tem # se ainda não tiver instalado
+sdk use java 17.0.8-tem # para usar nesta sessão
+mvn -version # deve exibir Java 17.x e Maven 3.x
 
-3. DOCKERFILE
---------------
-Certifique-se de ter um arquivo Dockerfile com o seguinte conteúdo:
+- Compilar o projeto
 
-    FROM eclipse-temurin:21-jdk-alpine
-    RUN adduser -D -h /home/SysWeather SysUser
-    WORKDIR /app
-    ENV URL=${URL}
-    COPY target/*.jar app.jar
-    EXPOSE 8080
-    USER SysUser
-    ENTRYPOINT ["sh", "-c", "exec java -jar app.jar"]
+mvn clean compile
 
-4. BUILD DA IMAGEM DOCKER
---------------------------
-Execute:
+- Gerar o JAR (sem testes)
 
-    docker build -t sysweather-app .
+mvn clean package -DskipTests
 
-5. CRIAR REDE DOCKER
----------------------
-    docker network create sysweather-network
+* O JAR será gerado em target/sysweather-0.0.1-SNAPSHOT.jar *
 
-6. SUBIR O CONTAINER MYSQL
----------------------------
-    docker run -d --name sysweather_mysql \\
-      --network sysweather-network \\
-      --user 1000:1000 \\
-      -e MYSQL_ROOT_PASSWORD=root \\
-      -e MYSQL_DATABASE=sysweatherdb \\
-      -e MYSQL_USER=sysweatheruser \\
-      -e MYSQL_PASSWORD=s525sf53a2 \\
-      -p 3306:3306 \\
-      -v mysql_data:/var/lib/mysql \\
-      mysql:8.0
+- Construir a imagem Docker da aplicação
+docker build -t sysweather-app .
 
-7. SUBIR O CONTAINER DA APLICAÇÃO JAVA
----------------------------------------
-    docker run -d --name sysweather_app \\
-      --network sysweather-network \\
-      -e URL=jdbc:mysql://sysweather_mysql:3306/sysweatherdb \\
-      -p 8080:8080 \\
-      sysweather-app
+- Criar a rede Docker dedicada
+docker network create sysweather-network
 
-8. ACESSAR A API
------------------
-Acesse http://localhost:8080 no navegador ou via Postman.
+- Subir o container MySQL
 
-9. LIMPAR TUDO (opcional)
---------------------------
-    docker stop sysweather_app sysweather_mysql
-    docker rm sysweather_app sysweather_mysql
-    docker volume rm mysql_data
-    docker network rm sysweather-network
+docker run -d --name sysweather_mysql
+--network sysweather-network
+--user 1000:1000
+-e MYSQL_ROOT_PASSWORD=root
+-e MYSQL_DATABASE=sysweatherdb
+-e MYSQL_USER=sysweatheruser
+-e MYSQL_PASSWORD=s525sf53a2
+-p 3306:3306
+-v mysql_data:/var/lib/mysql
+mysql:8.0
 
-AUTORES: David, Felipe e Gustavo – Projeto FIAP - SysWeather
+- comando para rodar in line(SQL): 
+
+docker run -d --name sysweather_mysql --network sysweather-network --user 1000:1000 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sysweatherdb -e MYSQL_USER=sysweatheruser -e MYSQL_PASSWORD=s525sf53a2 -p 3306:3306 -v mysql_data:/var/lib/mysql mysql:8.0
+
+-  Subir o container da aplicação SysWeather
+docker run -d --name sysweather_app
+--network sysweather-network
+-e URL=jdbc:mysql://sysweather_mysql:3306/sysweatherdb
+-p 8080:8080
+sysweather-app
+
+-  comando para subir in line(Java)
+
+docker run -d --name sysweather_app --network sysweather-network -e URL=jdbc:mysql://sysweather_mysql:3306/sysweatherdb -p 8080:8080 sysweather-app
+
+- Verificar imagens, containers e rede
+
+docker images
+docker ps
+docker network ls
+
+ - Acessar o Swagger UI
+Abra no navegador:
+http://localhost:8080/swagger-ui/index.html
+
+- Validar o conteúdo do banco via bash
+docker exec -it sysweather_mysql
+mysql -u sysweatheruser -ps525sf53a2 sysweatherdb
+mysql> SHOW TABLES;
+mysql> SELECT * FROM municipio;
+
+
+
+# Limpeza (opcional)
+docker rm -f sysweather_app sysweather_mysql
+docker volume rm mysql_data
+docker network rm sysweather-network
+
+===========================
